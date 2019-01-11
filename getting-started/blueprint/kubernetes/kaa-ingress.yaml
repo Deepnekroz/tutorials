@@ -1,0 +1,20 @@
+# ingress for http proxy and ws
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /  # delete from uri path
+  name: app-ingress
+spec:
+  rules:
+  - host: mykaa.info # allow regexp todo: specify cluster host
+    http:
+      paths:
+      - backend:
+          serviceName: wd-service
+          servicePort: 30900
+        path: /
+      - backend:
+          serviceName: epr
+          servicePort: 80
+        path: /epr

@@ -1,0 +1,91 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: epts
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: epts
+        tier: backend
+    spec:
+      containers:
+      - name: epts
+        image: hub.kaaiot.io/kaaiot/epts/epts:latest
+        terminationMessagePolicy: FallbackToLogsOnError
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: management
+          initialDelaySeconds: 150
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: management
+          initialDelaySeconds: 1
+          periodSeconds: 1
+        resources:
+          requests:
+            memory: 350Mi
+          limits:
+            memory: 1Gi
+        env:
+        - name: CONFIG_SOURCE
+          value: file
+        - name: KAA_LICENSE_CERT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kaa-license
+              key: password
+        ports:
+        - name: rest-api
+          containerPort: 80
+        - name: management
+          containerPort: 8080
+        - name: jmx
+          containerPort: 10500
+        volumeMounts:
+        - mountPath: /srv/kpc
+          name: epts-configs-volume
+        - name: license-volume
+          mountPath: /run/license
+      imagePullSecrets:
+      - name: kaaid
+      volumes:
+      - name: epts-configs-volume
+        configMap:
+          name: epts-configs
+      - name: license-volume
+        secret:
+          secretName: kaa-license
+          items:
+          - key: file
+            path: license.p12
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: epts
+  labels:
+    app: epts
+    tier: backend
+spec:
+  type: "NodePort"
+  ports:
+  - name: rest-api
+    port: 80
+    targetPort: rest-api
+    nodePort: 30740
+  selector:
+    app: epts
+    tier: backend

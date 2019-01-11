@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kpc-configs
+  labels:
+    name: kpc-configs
+  namespace: default
+data:
+  service-config.yml: |-
+    kaa:
+      applications:
+        lamppost:
+          versions:
+            lamppost_v1:
+              allowed-extension-instances:
+              - epmx
+      extension-instances:
+        epmx:
+
+    logging:
+      level:
+        org.kaaproject.kpc: TRACE

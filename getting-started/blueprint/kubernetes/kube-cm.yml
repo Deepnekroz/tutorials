@@ -1,0 +1,84 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cm
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cm
+        tier: backend
+    spec:
+      containers:
+      - name: cm
+        image: hub.kaaiot.io/kaaiot/cm/cm:latest
+        terminationMessagePolicy: FallbackToLogsOnError
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: management
+          initialDelaySeconds: 150
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: management
+          initialDelaySeconds: 1
+          periodSeconds: 1
+        resources:
+          requests:
+            memory: 350Mi
+          limits:
+            memory: 1Gi
+        env:
+        - name: MARIADB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mariadb.credentials
+              key: username
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb.credentials
+              key: password
+        - name: CONFIG_SOURCE
+          value: file
+        ports:
+        - name: rest-api
+          containerPort: 80
+        - name: management
+          containerPort: 8080
+        - name: jmx
+          containerPort: 10500
+        volumeMounts:
+        - mountPath: /srv/cm
+          name: cm-configs-volume
+      volumes:
+      - name: cm-configs-volume
+        configMap:
+          name: cm-configs
+      imagePullSecrets:
+      - name: kaaid
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cm
+  labels:
+    app: cm
+    tier: backend
+spec:
+  type: "LoadBalancer"
+  ports:
+  - name: rest-api
+    port: 80
+    targetPort: rest-api
+    nodePort: 30730
+  selector:
+    app: cm
+    tier: backend

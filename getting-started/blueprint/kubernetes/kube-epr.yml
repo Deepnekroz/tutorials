@@ -1,0 +1,74 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: epr
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: epr
+        tier: backend
+    spec:
+      containers:
+      - name: epr
+        image: hub.kaaiot.io/kaaiot/epr/epr:latest
+        terminationMessagePolicy: FallbackToLogsOnError
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: management
+          initialDelaySeconds: 150
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: management
+          initialDelaySeconds: 1
+          periodSeconds: 1
+        resources:
+          requests:
+            memory: 350Mi
+          limits:
+            memory: 1Gi
+        env:
+        - name: CONFIG_SOURCE
+          value: file
+        ports:
+        - name: rest-api
+          containerPort: 80
+        - name: management
+          containerPort: 8080
+        - name: jmx
+          containerPort: 10500
+        volumeMounts:
+        - mountPath: /srv/epr
+          name: epr-configs-volume
+      volumes:
+      - name: epr-configs-volume
+        configMap:
+          name: epr-configs
+      imagePullSecrets:
+      - name: kaaid
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: epr
+  labels:
+    app: epr
+    tier: backend
+spec:
+  type: "LoadBalancer"
+  ports:
+  - name: rest-api
+    port: 80
+    targetPort: rest-api
+    nodePort: 30750
+  selector:
+    app: epr
+    tier: backend

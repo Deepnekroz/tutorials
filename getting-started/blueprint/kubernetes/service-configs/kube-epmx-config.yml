@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: epmx-configs
+  labels:
+    name: epmx-configs
+  namespace: default
+data:
+  service-config.yml: |-
+    kaa:
+      applications:
+        lamppost:
+          versions:
+            lamppost_v1:
+              metadata-keys:
+                city:
+                  write-enabled: true
+                address:
+                  write-enabled: true
+                model:
+                  write-enabled: true
+                fwVersion:
+                  write-enabled: true
+                deviceName:
+                  write-enabled: true
+
+    logging:
+      level:
+        org.kaaproject.epmx: TRACE

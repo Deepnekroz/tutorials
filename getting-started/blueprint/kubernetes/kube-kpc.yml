@@ -1,0 +1,79 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kpc
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kpc
+        tier: backend
+    spec:
+      containers:
+      - name: kpc
+        image: hub.kaaiot.io/kaaiot/kpc/kpc:latest
+        terminationMessagePolicy: FallbackToLogsOnError
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: management
+          initialDelaySeconds: 150
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: management
+          initialDelaySeconds: 1
+          periodSeconds: 1
+        resources:
+          requests:
+            memory: 350Mi
+          limits:
+            memory: 1800Mi
+        env:
+        - name: CONFIG_SOURCE
+          value: file
+        ports:
+        - name: mqtt
+          containerPort: 1883
+        - name: mqtt-tls
+          containerPort: 8883
+        - name: management
+          containerPort: 8080
+        - name: jmx
+          containerPort: 10500
+        volumeMounts:
+        - mountPath: /srv/kpc
+          name: kpc-configs-volume
+      volumes:
+      - name: kpc-configs-volume
+        configMap:
+          name: kpc-configs
+      imagePullSecrets:
+      - name: kaaid
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kpc
+  labels:
+    app: kpc
+    tier: backend
+spec:
+  type: "LoadBalancer"
+  ports:
+  - name: mqtt
+    port: 1883
+    targetPort: mqtt
+    nodePort: 30720
+  - name: mqtt-tls
+    port: 8883
+    targetPort: mqtt-tls
+    nodePort: 30721
+  selector:
+    app: kpc
+    tier: backend

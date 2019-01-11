@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wd-configs
+  labels:
+    name: wd-configs
+  namespace: default
+data:
+  service-config.yml: |-
+    ---
+    info:
+      logo:
+        main:
+        secondary:
+      theme: night
+      title: Kaa Web Dashboard
+    common:
+      autoUpdate: 4000
+    services:
+      API_CM: http://mykaa.info/cm
+      API_EPR: http://mykaa.info/epr
+    dashboards:
+      -
+        description: "List of registered lamppost endpoints"
+        displayDescription: true
+        displayTitle: true
+        isTopLevel: true
+        path: /lamppost
+        title: Lampposts list
+        sidebarTitle: Lampposts list
+        widgets:
+          -
+            height: 200
+            percentWidth: 100
+            config:
+              type: epList
+              displayTitle: true
+              title: Lampposts list
+              applicationName: lamppost
+              service: API_EPR
+              baseUrl: api/v1
+              columns:
+                - display: City
+                  text: '${city}'
+                  values:
+                    - name: city
+                      path: metadata.city
+                - display: Address
+                  text: '${address}'
+                  values:
+                    - name: address
+                      path: metadata.address
+                - display: Model
+                  text: '${model}'
+                  values:
+                    - name: model
+                      path: metadata.model
+                - display: Firmware Version
+                  text: '${fwVersion}'
+                  values:
+                    - name: fwVersion
+                      path: metadata.fwVersion
+                - display: ID
+                  text: '${ID}'
+                  values:
+                    - name: ID
+                      path: endpointId
+                - display: Device name
+                  text: '${deviceName}'
+                  values:
+                    - name: deviceName
+                      path: metadata.deviceName
+                - display: Created
+                  text: '${created}'
+                  values:
+                    - name: created
+                      path: createdDate
+              itemLink:
+                path: "/lamppost/{ep_id}"
+                parameters:
+                    itemJsonPath: endpointId
+                    name: ep_id
+                    type: path
+              metadata: metadata
+      -
+        displayTitle: true
+        isTopLevel: false
+        path: "/lamppost/:id"
+        title: "Lamppost"
+        widgets:
+          -
+            height: 350
+            percentWidth: 50
+            config:
+              service: API_EPR
+              type: metadata
+              title: Metadata
+              allEditable: false
+              allFields: false
+              baseUrl: api/v1
+              fields:
+                -
+                  dataType: string
+                  displayName: "City"
+                  isEditable: true
+                  name: city
+                  section: metadata
+                -
+                  dataType: string
+                  displayName: "Address"
+                  isEditable: true
+                  name: address
+                  section: metadata
+                -
+                  dataType: string
+                  displayName: "Model"
+                  isEditable: true
+                  name: model
+                  section: metadata
+                -
+                  dataType: string
+                  displayName: "Firmware Version"
+                  isEditable: false
+                  name: fwVersion
+                  section: metadata
+                -
+                  dataType: string
+                  displayName: "Device name"
+                  isEditable: false
+                  name: deviceName
+                  section: metadata
