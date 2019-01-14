@@ -12,7 +12,7 @@ let subjectForSubscription = `kaa.v1.events.epts.endpoint.data-collection.data-p
 nats.subscribe(subjectForSubscription, function(msg) {
     console.log('Message received: ', type.toString(type.fromBuffer(msg)));
 });
-//Publish message to EPTS. 'test' part stands for the name of TSTP transmitter configured in this merge request: https://gitlab.21ba.kaaiot.net/trial/blueprint/merge_requests/2
+//Publish message to EPTS. 'test' part in subject stands for the name of TSTP transmitter configured.
 //See EPTS docs for more information: https://docs.kaaiot.io/EPTS/docs/current/Overview/
 let subjectForPublish = `kaa.v1.events.test.endpoint.data-collection.data-points-received.Logs`;
 const message = {
