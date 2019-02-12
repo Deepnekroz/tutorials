@@ -19,7 +19,7 @@ const message = {
     correlationId: Math.random().toString(36).substring(7),
     timestamp: 0,
     appVersionName: 'demo_application_v1',
-    endpointId: 'qwerty12345678',
+    endpointId: '4f24cb40-282d-4dfb-8396-71e7a4782cb5', // You can get endpoint ID after its provisioning, see EPR REST API - https://docs.kaaiot.io/EPR/docs/current/REST-API/#endpoints_post_response
     timeSeriesName: 'Logs',
     dataPoints: [{
         timestamp: 1875943753,
